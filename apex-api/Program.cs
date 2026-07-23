@@ -1,4 +1,8 @@
+using Amazon.DynamoDBv2;
+using Amazon.S3;
+using ApexApi.Infrastructure;
 using ApexApi.Options;
+using Microsoft.Extensions.Options;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -29,6 +33,28 @@ builder.Services.AddOptions<UsdaOptions>()
 builder.Services.AddOptions<CognitoOptions>()
     .BindConfiguration(CognitoOptions.SectionName)
     .ValidateOnStart();
+
+// AWS SDK clients — registered once, region driven by AwsOptions rather than
+// left to the SDK's default credential/region resolution chain, so the region
+// we actually configured in appsettings.json is the single source of truth.
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+{
+    var region = sp.GetRequiredService<IOptions<AwsOptions>>().Value.Region;
+    return new AmazonS3Client(Amazon.RegionEndpoint.GetBySystemName(region));
+});
+
+builder.Services.AddSingleton<IAmazonDynamoDB>(sp =>
+{
+    var region = sp.GetRequiredService<IOptions<AwsOptions>>().Value.Region;
+    return new AmazonDynamoDBClient(Amazon.RegionEndpoint.GetBySystemName(region));
+});
+
+// Repository Pattern (Section 4, Pattern 1) — interfaces registered so every
+// consumer depends on IFoodLogRepository/IUserRepository/IS3StorageService,
+// never the concrete DynamoDB/S3 classes (Dependency Inversion, Part B).
+builder.Services.AddScoped<IS3StorageService, S3StorageService>();
+builder.Services.AddScoped<IFoodLogRepository, DynamoDbFoodLogRepository>();
+builder.Services.AddScoped<IUserRepository, DynamoDbUserRepository>();
 
 var app = builder.Build();
 
