@@ -1,6 +1,7 @@
 using Amazon.DynamoDBv2;
 using Amazon.S3;
 using ApexApi.Infrastructure;
+using ApexApi.ML;
 using ApexApi.Options;
 using Microsoft.Extensions.Options;
 
@@ -55,6 +56,11 @@ builder.Services.AddSingleton<IAmazonDynamoDB>(sp =>
 builder.Services.AddScoped<IS3StorageService, S3StorageService>();
 builder.Services.AddScoped<IFoodLogRepository, DynamoDbFoodLogRepository>();
 builder.Services.AddScoped<IUserRepository, DynamoDbUserRepository>();
+
+// Singleton Pattern (Section 4, Pattern 2) — one InferenceSession per model,
+// shared across every request for the app's lifetime. See ML/OnnxModelLoader.cs
+// for why loading is lazy rather than happening in the constructor.
+builder.Services.AddSingleton<OnnxModelLoader>();
 
 var app = builder.Build();
 
