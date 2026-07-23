@@ -1,0 +1,6 @@
+@ApexApi_HostAddress = http://localhost:5234
+
+GET {{ApexApi_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###

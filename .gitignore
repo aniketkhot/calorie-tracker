@@ -1,0 +1,25 @@
+# .NET build output
+bin/
+obj/
+out/
+
+# Visual Studio / Rider / VS Code
+.vs/
+.idea/
+*.user
+*.suo
+
+# ASP.NET Core secrets and local overrides
+appsettings.Development.json
+appsettings.Local.json
+*.local.json
+secrets.json
+
+# ONNX model files (large binaries — not committed, downloaded/regenerated separately)
+apex-api/ML/Models/*.onnx
+
+# macOS
+.DS_Store
+
+# Logs
+*.log
